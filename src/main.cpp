@@ -44,12 +44,12 @@ void loop()
   {
     received = false;
     analogWrite(LED_PIN, LOW);
-    Serial.printf("EVT:BEGIN_REPORT;\n");
+    Serial.printf("EVT:0;\n");
     Serial.printf("SRC:%02X%02X%02X%02X%02X%02X;\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     Serial.printf("TMP:%.2f;\n", pack.Temperature);
     Serial.printf("BAT:%d;\n", pack.BatteryLevel);
     Serial.printf("CHG:%d;\n", pack.Charging);
-    Serial.printf("EVT:END_REPORT;\n");
+    Serial.printf("EVT:1;\n");
     digitalWrite(LED_PIN, HIGH);
   }
 }
