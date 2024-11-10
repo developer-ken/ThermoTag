@@ -13,7 +13,8 @@
 
 #define BAUDRATE 74880
 
-uint8_t LISTENER_ADDRESS[] = {0xd4, 0x8a, 0xFc, 0x29, 0x95, 0x2f};
+uint8_t LISTENER_ADDRESS[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+//uint8_t LISTENER_ADDRESS[] = {0xd4, 0x8a, 0xFc, 0x29, 0x95, 0x2f};
 uint8_t fw = 51;
 bool direction = true;
 OneWire oneWire(SDA_PIN);
@@ -41,7 +42,7 @@ void setup()
   Serial.printf("T=%.2f\n", pack.Temperature);
   Serial.printf("V=%d\n", pack.BatteryLevel);
   Serial.printf("C=%d\n", pack.Charging);
-  ESPNow.send_message(LISTENER_ADDRESS, (uint8_t *)&pack, sizeof(pack));
+  ESPNow.send_message(LISTENER_ADDRESS, (uint8_t *)&pack, sizeof(ReportPack));
   //  if (temperature < -100)
   //  {
   //    Serial.begin(115200);
