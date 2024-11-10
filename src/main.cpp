@@ -22,8 +22,8 @@ M1820 sensor(&oneWire);
 
 void setup()
 {
-  Serial.begin(BAUDRATE);
-  Serial.printf("\n");
+  // Serial.begin(BAUDRATE);
+  // Serial.printf("\n");
   pinMode(LED_PIN, OUTPUT);
   analogWriteFreq(1000);
   analogWrite(LED_PIN, 255 - BRIGHTNESS);
@@ -39,9 +39,9 @@ void setup()
   pack.Temperature = temperature;
   pack.Charging = digitalRead(CHARGE_DETECT_PIN);
   pack.BatteryLevel = analogRead(0) * 55.45454 / 1024;
-  Serial.printf("T=%.2f\n", pack.Temperature);
-  Serial.printf("V=%d\n", pack.BatteryLevel);
-  Serial.printf("C=%d\n", pack.Charging);
+  // Serial.printf("T=%.2f\n", pack.Temperature);
+  // Serial.printf("V=%d\n", pack.BatteryLevel);
+  // Serial.printf("C=%d\n", pack.Charging);
   ESPNow.send_message(LISTENER_ADDRESS, (uint8_t *)&pack, sizeof(ReportPack));
   //  if (temperature < -100)
   //  {
