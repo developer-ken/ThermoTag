@@ -8,51 +8,51 @@
 #include "pinout.h"
 #include "protocol.h"
 
-#define SAMPLE_INTERVAL 2000 // 采样间隔，毫秒
-#define BRIGHTNESS 1         // LED指示灯亮度，0-255
-
 #define BAUDRATE 74880
 
 uint8_t BROADCAST_ADDRESS[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-uint8_t fw = 51;
-bool direction = true;
-OneWire oneWire(SDA_PIN);
-M1820 sensor(&oneWire);
+
+bool received = false;
+uint8_t mac[6];
+ReportPack pack;
+
+void onReceive(uint8_t *mac_addr, uint8_t *data, uint8_t len)
+{
+  if (len != sizeof(ReportPack))
+    return; // 忽略长度不匹配的数据包
+  pack = *((ReportPack *)data);
+  memcpy(mac, mac_addr, 6);
+  received = true;
+}
 
 void setup()
 {
   Serial.begin(BAUDRATE);
   Serial.printf("\n");
-  pinMode(LED_PIN, OUTPUT);
   analogWriteFreq(1000);
-  analogWrite(LED_PIN, 255 - BRIGHTNESS);
   WiFi.mode(WIFI_STA);
   WiFi.begin();
+  wifi_promiscuous_enable(1);
+  wifi_set_channel(2);
+  wifi_promiscuous_enable(0);
+  WiFi.disconnect();
   esp_now_init();
-  M1820::SampleNow();
-  float temperature = M1820::receiveTemperatureSkipRom();
-  ReportPack pack;
-  pack.Temperature = temperature;
-  pack.Charging = digitalRead(CHARGE_DETECT_PIN);
-  pack.BatteryLevel = analogRead(0) * 55.45454 / 1024;
-  Serial.printf("T=%.2f\n", pack.Temperature);
-  Serial.printf("V=%d\n", pack.BatteryLevel);
-  Serial.printf("C=%d\n", pack.Charging);
-  esp_now_send(BROADCAST_ADDRESS, (uint8_t *)&pack, sizeof(pack));
-  //  if (temperature < -100)
-  //  {
-  //    Serial.begin(115200);
-  //    Serial.println("ERROR: Sensor communication error.");
-  //    delay(100);
-  //    digitalWrite(LED_PIN, HIGH);
-  //    ESP.reset();
-  //    return;
-  //  }
-  //  digitalWrite(LED_PIN, HIGH);
-  ESP.deepSleep(SAMPLE_INTERVAL * 1000 - millis());
+  esp_now_register_recv_cb(onReceive);
+  Serial.printf("EVT:SETUP;\n");
 }
 
 void loop()
 {
-  digitalWrite(LED_PIN, LOW);
+  if (received)
+  {
+    received = false;
+    analogWrite(LED_PIN, LOW);
+    Serial.printf("EVT:BEGIN_REPORT;\n");
+    Serial.printf("SRC:%02X%02X%02X%02X%02X%02X;\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    Serial.printf("TMP:%.2f;\n", pack.Temperature);
+    Serial.printf("BAT:%d;\n", pack.BatteryLevel);
+    Serial.printf("CHG:%d;\n", pack.Charging);
+    Serial.printf("EVT:END_REPORT;\n");
+    digitalWrite(LED_PIN, HIGH);
+  }
 }
