@@ -10,7 +10,7 @@
 
 #define BAUDRATE 74880
 
-uint8_t RECEIVER_ADDRESS[] = {0xd4, 0x8a, 0xFc, 0x29, 0x95, 0x2f}; //本机MAC，和sender设置为一样的
+//uint8_t RECEIVER_ADDRESS[] = {0xd4, 0x8a, 0xFc, 0x29, 0x95, 0x2f};
 
 bool received = false;
 uint8_t mac[6];
@@ -20,8 +20,8 @@ void onReceive(uint8_t *mac_addr, uint8_t *data, uint8_t len)
 {
   if (len != sizeof(ReportPack))
     return; // 忽略长度不匹配的数据包
-  pack = *((ReportPack *)data);
   memcpy(mac, mac_addr, 6);
+  memcpy(&pack, data, sizeof(ReportPack));
   received = true;
 }
 
@@ -32,8 +32,7 @@ void setup()
   analogWriteFreq(1000);
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
-  ESPNow.set_mac(RECEIVER_ADDRESS);
-  WiFi.disconnect();
+//  ESPNow.set_mac(RECEIVER_ADDRESS);
   ESPNow.init();
   ESPNow.reg_recv_cb(onReceive);
   Serial.printf("EVT:SETUP;\n");
