@@ -28,6 +28,10 @@ void setup()
   analogWrite(LED_PIN, 255 - BRIGHTNESS);
   WiFi.mode(WIFI_STA);
   WiFi.begin();
+  wifi_promiscuous_enable(1);
+  wifi_set_channel(2);
+  wifi_promiscuous_enable(0);
+  WiFi.disconnect();
   esp_now_init();
   M1820::SampleNow();
   float temperature = M1820::receiveTemperatureSkipRom();
