@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 #include <M1820.h>
-#include <espnow.h>
+#include <ESPNowW.h>
 #include <OneWire.h>
 #include <ESP8266WiFi.h>
 
@@ -10,7 +10,7 @@
 
 #define BAUDRATE 74880
 
-uint8_t BROADCAST_ADDRESS[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+uint8_t RECEIVER_ADDRESS[] = {0xd4, 0x8a, 0xFc, 0x29, 0x95, 0x2f}; //本机MAC，和sender设置为一样的
 
 bool received = false;
 uint8_t mac[6];
@@ -31,13 +31,11 @@ void setup()
   Serial.printf("\n");
   analogWriteFreq(1000);
   WiFi.mode(WIFI_STA);
-  WiFi.begin();
-  wifi_promiscuous_enable(1);
-  wifi_set_channel(2);
-  wifi_promiscuous_enable(0);
   WiFi.disconnect();
-  esp_now_init();
-  esp_now_register_recv_cb(onReceive);
+  ESPNow.set_mac(RECEIVER_ADDRESS);
+  WiFi.disconnect();
+  ESPNow.init();
+  ESPNow.reg_recv_cb(onReceive);
   Serial.printf("EVT:SETUP;\n");
 }
 
