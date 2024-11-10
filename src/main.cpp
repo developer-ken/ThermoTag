@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
 #include <M1820.h>
-#include <espnow.h>
 #include <OneWire.h>
+#include <ESPNowW.h>
 #include <ESP8266WiFi.h>
 
 #include "pinout.h"
@@ -13,7 +13,7 @@
 
 #define BAUDRATE 74880
 
-uint8_t BROADCAST_ADDRESS[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+uint8_t LISTENER_ADDRESS[] = {0xd4, 0x8a, 0xFc, 0x29, 0x95, 0x2f};
 uint8_t fw = 51;
 bool direction = true;
 OneWire oneWire(SDA_PIN);
@@ -26,13 +26,12 @@ void setup()
   pinMode(LED_PIN, OUTPUT);
   analogWriteFreq(1000);
   analogWrite(LED_PIN, 255 - BRIGHTNESS);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin();
-  wifi_promiscuous_enable(1);
-  wifi_set_channel(2);
-  wifi_promiscuous_enable(0);
-  WiFi.disconnect();
-  esp_now_init();
+  {
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
+    ESPNow.init();
+    ESPNow.add_peer(LISTENER_ADDRESS);
+  }
   M1820::SampleNow();
   float temperature = M1820::receiveTemperatureSkipRom();
   ReportPack pack;
@@ -42,7 +41,7 @@ void setup()
   Serial.printf("T=%.2f\n", pack.Temperature);
   Serial.printf("V=%d\n", pack.BatteryLevel);
   Serial.printf("C=%d\n", pack.Charging);
-  esp_now_send(BROADCAST_ADDRESS, (uint8_t *)&pack, sizeof(pack));
+  ESPNow.send_message(LISTENER_ADDRESS, (uint8_t *)&pack, sizeof(pack));
   //  if (temperature < -100)
   //  {
   //    Serial.begin(115200);
